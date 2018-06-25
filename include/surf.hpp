@@ -26,6 +26,8 @@ public:
 	bool isValid() const;
 	bool getFpFlag() const;
 	int compare(const std::string& key) const;
+	int compareWithGreaterThanHint(const std::string& key) const;
+	int compareWithLessThanHint(const std::string& key) const;
 	std::string getKey() const;
 	int getSuffix(word_t* suffix) const;
 	std::string getKeyWithSuffix(unsigned* bitlen) const;
@@ -221,7 +223,7 @@ bool SuRF::lookupRange(const std::string& left_key, const bool left_inclusive,
 	}
     }
     if (!iter_.isValid()) return false;
-    int compare = iter_.compare(right_key);
+    int compare = iter_.compareWithLessThanHint(right_key);
     if (compare == kCouldBePositive)
 	return true;
     if (right_inclusive)
@@ -269,6 +271,22 @@ int SuRF::Iter::compare(const std::string& key) const {
     if (dense_iter_.isComplete() || dense_compare != 0) 
 	return dense_compare;
     return sparse_iter_.compare(key);
+}
+
+int SuRF::Iter::compareWithGreaterThanHint(const std::string& key) const {
+    assert(isValid());
+    int dense_compare = dense_iter_.compareWithGreaterThanHint(key);
+    if (dense_iter_.isComplete() || dense_compare != 0) 
+	return dense_compare;
+    return sparse_iter_.compareWithGreaterThanHint(key);
+}
+
+int SuRF::Iter::compareWithLessThanHint(const std::string& key) const {
+    assert(isValid());
+    int dense_compare = dense_iter_.compareWithLessThanHint(key);
+    if (dense_iter_.isComplete() || dense_compare != 0) 
+	return dense_compare;
+    return sparse_iter_.compareWithLessThanHint(key);
 }
 
 std::string SuRF::Iter::getKey() const {

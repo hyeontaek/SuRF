@@ -4,8 +4,8 @@
 int main(int argc, char *argv[]) {
     if (argc != 9) {
 	std::cout << "Usage:\n";
-	std::cout << "1. filter type: SuRF, SuRFHash, SuRFReal, SuRFMixed, Bloom\n";
-	std::cout << "2. suffix length: 0 < len <= 64 (for SuRFHash and SuRFReal only)\n";
+	std::cout << "1. filter type: SuRF, SuRFHash, SuRFReal, SuRFMixed, SuRFInterval, Bloom\n";
+	std::cout << "2. suffix length: 0 < len <= 64 (for SuRFHash, SuRFReal, and SuRFInterval only)\n";
 	std::cout << "3. workload type: mixed, alterByte (only for email key)\n";
 	std::cout << "4. percentage of keys inserted: 0 < num <= 100\n";
 	std::cout << "5. byte position (conting from last, only for alterByte): num\n";
@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
 	&& filter_type.compare(std::string("SuRFHash")) != 0
 	&& filter_type.compare(std::string("SuRFReal")) != 0
 	&& filter_type.compare(std::string("SuRFMixed")) != 0
+	&& filter_type.compare(std::string("SuRFInterval")) != 0
 	&& filter_type.compare(std::string("Bloom")) != 0
 	&& filter_type.compare(std::string("ARF")) != 0) {
 	std::cout << bench::kRed << "WRONG filter type\n" << bench::kNoColor;

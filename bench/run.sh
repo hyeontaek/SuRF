@@ -15,6 +15,9 @@ echo 'SuRFReal, 4-bit suffixes, random int, point queries'
 echo 'SuRFMixed, 2-bit hash suffixes and 2-bit real suffixes, random int, point queries'
 ../build/bench/workload SuRFMixed 2 mixed 50 0 randint mix zipfian
 
+echo 'SuRFInterval, 4-bit suffixes, random int, point queries'
+../build/bench/workload SuRFInterval 4 mixed 50 0 randint point zipfian
+
 
 # echo 'Bloom Filter, email, point queries'
 # ../build/bench/workload Bloom 1 mixed 50 0 email point zipfian
@@ -34,6 +37,9 @@ echo 'SuRFMixed, 2-bit hash suffixes and 2-bit real suffixes, random int, point 
 
 echo 'SuRFReal, 4-bit suffixes, random int, range queries'
 ../build/bench/workload SuRFReal 4 mixed 50 0 randint range zipfian
+
+echo 'SuRFInterval, 4-bit suffixes, random int, range queries'
+../build/bench/workload SuRFInterval 4 mixed 50 0 randint range zipfian
 
 # echo 'SuRFReal, 4-bit suffixes, email, point queries'
 # ../build/bench/workload SuRFReal 4 mixed 50 0 email range zipfian

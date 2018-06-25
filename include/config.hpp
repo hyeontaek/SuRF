@@ -29,7 +29,8 @@ enum SuffixType {
     kNone = 0,
     kHash = 1,
     kReal = 2,
-    kMixed = 3
+    kMixed = 3,
+    kInterval = 4
 };
 
 void align(char*& ptr) {

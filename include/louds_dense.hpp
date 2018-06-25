@@ -38,6 +38,8 @@ public:
 	}
 
 	int compare(const std::string& key) const;
+	int compareWithGreaterThanHint(const std::string& key) const;
+	int compareWithLessThanHint(const std::string& key) const;
 	std::string getKey() const;
 	int getSuffix(word_t* suffix) const;
 	std::string getKeyWithSuffix(unsigned* bitlen) const;
@@ -177,7 +179,8 @@ LoudsDense::LoudsDense(const SuRFBuilder* builder) {
 	suffixes_ = new BitvectorSuffix(builder->getSuffixType(), 
 					hash_suffix_len, real_suffix_len,
                                         builder->getSuffixes(),
-					num_suffix_bits_per_level, 0, height_);
+					num_suffix_bits_per_level, 0, height_,
+					builder->getSuffixIntervals());
     }
 }
 
@@ -299,7 +302,7 @@ bool LoudsDense::compareSuffixGreaterThan(const position_t pos, const std::strin
 					  const level_t level, const bool inclusive, 
 					  LoudsDense::Iter& iter) const {
     position_t suffix_pos = getSuffixPos(pos, false);
-    int compare = suffixes_->compare(suffix_pos, key, level);
+    int compare = suffixes_->compareWithGreaterThanHint(suffix_pos, key, level);
     if ((compare != kCouldBePositive) && (compare < 0)) {
 	iter++;
 	return false;
@@ -327,6 +330,34 @@ int LoudsDense::Iter::compare(const std::string& key) const {
     if (isComplete()) {
 	position_t suffix_pos = trie_->getSuffixPos(pos_in_trie_[key_len_ - 1], is_at_prefix_key_);
 	return trie_->suffixes_->compare(suffix_pos, key, key_len_);
+    }
+    return compare;
+}
+
+int LoudsDense::Iter::compareWithGreaterThanHint(const std::string& key) const {
+    if (is_at_prefix_key_ && (key_len_ - 1) < key.length())
+	return -1;
+    std::string iter_key = getKey();
+    std::string key_dense = key.substr(0, iter_key.length());
+    int compare = iter_key.compare(key_dense);
+    if (compare != 0) return compare;
+    if (isComplete()) {
+	position_t suffix_pos = trie_->getSuffixPos(pos_in_trie_[key_len_ - 1], is_at_prefix_key_);
+	return trie_->suffixes_->compareWithGreaterThanHint(suffix_pos, key, key_len_);
+    }
+    return compare;
+}
+
+int LoudsDense::Iter::compareWithLessThanHint(const std::string& key) const {
+    if (is_at_prefix_key_ && (key_len_ - 1) < key.length())
+	return -1;
+    std::string iter_key = getKey();
+    std::string key_dense = key.substr(0, iter_key.length());
+    int compare = iter_key.compare(key_dense);
+    if (compare != 0) return compare;
+    if (isComplete()) {
+	position_t suffix_pos = trie_->getSuffixPos(pos_in_trie_[key_len_ - 1], is_at_prefix_key_);
+	return trie_->suffixes_->compareWithLessThanHint(suffix_pos, key, key_len_);
     }
     return compare;
 }

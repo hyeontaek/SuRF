@@ -29,6 +29,8 @@ public:
 	void clear();
 	bool isValid() const { return is_valid_; };
 	int compare(const std::string& key) const;
+	int compareWithGreaterThanHint(const std::string& key) const;
+	int compareWithLessThanHint(const std::string& key) const;
 	std::string getKey() const;
         int getSuffix(word_t* suffix) const;
 	std::string getKeyWithSuffix(unsigned* bitlen) const;
@@ -191,7 +193,8 @@ LoudsSparse::LoudsSparse(const SuRFBuilder* builder) {
 
 	suffixes_ = new BitvectorSuffix(builder->getSuffixType(), hash_suffix_len, real_suffix_len,
                                         builder->getSuffixes(),
-					num_suffix_bits_per_level, start_level_, height_);
+					num_suffix_bits_per_level, start_level_, height_,
+					builder->getSuffixIntervals());
     }
 }
 
@@ -320,7 +323,7 @@ bool LoudsSparse::compareSuffixGreaterThan(const position_t pos, const std::stri
 					   const level_t level, const bool inclusive, 
 					   LoudsSparse::Iter& iter) const {
     position_t suffix_pos = getSuffixPos(pos);
-    int compare = suffixes_->compare(suffix_pos, key, level);
+    int compare = suffixes_->compareWithGreaterThanHint(suffix_pos, key, level);
     if ((compare != kCouldBePositive) && (compare < 0)) {
 	iter++;
 	return false;
@@ -348,6 +351,32 @@ int LoudsSparse::Iter::compare(const std::string& key) const {
 	return compare;
     position_t suffix_pos = trie_->getSuffixPos(pos_in_trie_[key_len_ - 1]);
     return trie_->suffixes_->compare(suffix_pos, key_sparse, key_len_);
+}
+
+int LoudsSparse::Iter::compareWithGreaterThanHint(const std::string& key) const {
+    if (is_at_terminator_ && (key_len_ - 1) < (key.length() - start_level_))
+	return -1;
+    std::string iter_key = getKey();
+    std::string key_sparse = key.substr(start_level_);
+    std::string key_sparse_same_length = key_sparse.substr(0, iter_key.length());
+    int compare = iter_key.compare(key_sparse_same_length);
+    if (compare != 0) 
+	return compare;
+    position_t suffix_pos = trie_->getSuffixPos(pos_in_trie_[key_len_ - 1]);
+    return trie_->suffixes_->compareWithGreaterThanHint(suffix_pos, key_sparse, key_len_);
+}
+
+int LoudsSparse::Iter::compareWithLessThanHint(const std::string& key) const {
+    if (is_at_terminator_ && (key_len_ - 1) < (key.length() - start_level_))
+	return -1;
+    std::string iter_key = getKey();
+    std::string key_sparse = key.substr(start_level_);
+    std::string key_sparse_same_length = key_sparse.substr(0, iter_key.length());
+    int compare = iter_key.compare(key_sparse_same_length);
+    if (compare != 0) 
+	return compare;
+    position_t suffix_pos = trie_->getSuffixPos(pos_in_trie_[key_len_ - 1]);
+    return trie_->suffixes_->compareWithLessThanHint(suffix_pos, key_sparse, key_len_);
 }
 
 std::string LoudsSparse::Iter::getKey() const {

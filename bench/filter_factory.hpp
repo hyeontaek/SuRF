@@ -20,6 +20,8 @@ public:
 	    return new FilterSuRF(keys, surf::kReal, 0, suffix_len);
         else if (filter_type.compare(std::string("SuRFMixed")) == 0)
 	    return new FilterSuRF(keys, surf::kMixed, suffix_len, suffix_len);
+	else if (filter_type.compare(std::string("SuRFInterval")) == 0)
+	    return new FilterSuRF(keys, surf::kInterval, 0, suffix_len);
 	else if (filter_type.compare(std::string("Bloom")) == 0)
 	    return new FilterBloom(keys);
 	else

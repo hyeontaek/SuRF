@@ -90,6 +90,9 @@ public:
     level_t getRealSuffixLen() const {
 	return real_suffix_len_;
     }
+    const std::vector<std::string>& getSuffixIntervals() const {
+	return suffix_intervals_;
+    }
 
 private:
     static bool isSameKey(const std::string& a, const std::string& b) {
@@ -167,6 +170,9 @@ private:
     level_t real_suffix_len_;
     std::vector<std::vector<word_t> > suffixes_;
     std::vector<position_t> suffix_counts_;
+    std::vector<std::string> suffix_intervals_;
+
+    std::vector<std::vector<const std::string*> > keys_per_level_;
 
     // auxiliary per level bookkeeping vectors
     std::vector<position_t> node_counts_;
@@ -193,6 +199,18 @@ void SuRFBuilder::buildSparse(const std::vector<std::string>& keys) {
 	else // for last key, there is no successor key in the list
 	    level = insertKeyBytesToTrieUntilUnique(keys[curpos], std::string(), level);
 	insertSuffix(keys[curpos], level);
+    }
+
+    if (suffix_type_ == kInterval) {
+	BitvectorSuffix::findSuffixIntervals(suffix_intervals_, keys_per_level_, real_suffix_len_);
+
+	for (level_t level = 0; level < getTreeHeight(); level++) {
+	    for (position_t i = 0; i < keys_per_level_[level].size(); i++) {
+		const std::string& key = *keys_per_level_[level][i];
+		word_t suffix_word = BitvectorSuffix::constructIntervalSuffix(key, level, real_suffix_len_, suffix_intervals_);
+		storeSuffix(level, suffix_word);
+	    }
+	}
     }
 }
 
@@ -244,9 +262,13 @@ inline void SuRFBuilder::insertSuffix(const std::string& key, const level_t leve
     if (level >= getTreeHeight())
 	addLevel();
     assert(level - 1 < suffixes_.size());
-    word_t suffix_word = BitvectorSuffix::constructSuffix(suffix_type_, key, hash_suffix_len_,
-                                                          level, real_suffix_len_);
-    storeSuffix(level, suffix_word);
+    if (suffix_type_ != kInterval) {
+	word_t suffix_word = BitvectorSuffix::constructSuffix(suffix_type_, key, hash_suffix_len_,
+							      level, real_suffix_len_);
+	storeSuffix(level, suffix_word);
+    } else {
+	keys_per_level_[level].push_back(&key);
+    }
 }
 
 inline bool SuRFBuilder::isCharCommonPrefix(const label_t c, const level_t level) const {
@@ -398,6 +420,9 @@ void SuRFBuilder::addLevel() {
     louds_bits_.push_back(std::vector<word_t>());
     suffixes_.push_back(std::vector<word_t>());
     suffix_counts_.push_back(0);
+
+    if (suffix_type_ == kInterval)
+	keys_per_level_.push_back(std::vector<const std::string*>());
 
     node_counts_.push_back(0);
     is_last_item_terminator_.push_back(false);

@@ -12,7 +12,7 @@ namespace surf {
 
 namespace surftest {
 
-static const SuffixType kSuffixType = kReal;
+static const SuffixType kSuffixType = kInterval;
 static const level_t kSuffixLen = 8;
 
 class SuRFSmallTest : public ::testing::Test {

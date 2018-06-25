@@ -18,7 +18,7 @@ static const int kWordTestSize = 234369;
 static const uint64_t kIntTestStart = 10;
 static const int kIntTestBound = 1000001;
 static const uint64_t kIntTestSkip = 10;
-static const SuffixType kSuffixType = kMixed;
+static const SuffixType kSuffixType = kInterval;
 static std::vector<std::string> words;
 
 class SuRFUnitTest : public ::testing::Test {
@@ -78,7 +78,7 @@ void SuRFUnitTest::newSuRFWords(level_t suffix_len) {
         surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, kSuffixType, 0, 0);
     else if (kSuffixType == kHash)
         surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, kSuffixType, suffix_len, 0);
-    else if (kSuffixType == kReal)
+    else if (kSuffixType == kReal || kSuffixType == kInterval)
         surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, kSuffixType, 0, suffix_len);
     else
         surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, kSuffixType, suffix_len, suffix_len);
@@ -89,7 +89,7 @@ void SuRFUnitTest::newSuRFInts(level_t suffix_len) {
         surf_ = new SuRF(ints_, kIncludeDense, kSparseDenseRatio, kSuffixType, 0, 0);
     else if (kSuffixType == kHash)
         surf_ = new SuRF(ints_, kIncludeDense, kSparseDenseRatio, kSuffixType, suffix_len, 0);
-    else if (kSuffixType == kReal)
+    else if (kSuffixType == kReal || kSuffixType == kInterval)
         surf_ = new SuRF(ints_, kIncludeDense, kSparseDenseRatio, kSuffixType, 0, suffix_len);
     else
         surf_ = new SuRF(ints_, kIncludeDense, kSparseDenseRatio, kSuffixType, suffix_len, suffix_len);
