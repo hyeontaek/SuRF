@@ -81,10 +81,12 @@ void SuRFUnitTest::newSuRFWords(SuffixType suffix_type, level_t suffix_len) {
         surf_ = new SuRF(words);
     else if (suffix_type == kHash)
         surf_ = new SuRF(words, kHash, suffix_len, 0);
-    else if (suffix_type == kReal || suffix_type == kInterval)
+    else if (suffix_type == kReal)
         surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, kReal, 0, suffix_len);
     else if (suffix_type == kMixed)
         surf_ = new SuRF(words, kMixed, suffix_len, suffix_len);
+    else if (suffix_type == kInterval)
+        surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, kInterval, 0, suffix_len);
     else
 	surf_ = new SuRF(words);
 }
@@ -94,10 +96,12 @@ void SuRFUnitTest::newSuRFInts(SuffixType suffix_type, level_t suffix_len) {
         surf_ = new SuRF(ints_);
     else if (suffix_type == kHash)
         surf_ = new SuRF(ints_, kHash, suffix_len, 0);
-    else if (suffix_type == kReal || suffix_type == kInterval)
+    else if (suffix_type == kReal)
         surf_ = new SuRF(ints_, kIncludeDense, kSparseDenseRatio, kReal, 0, suffix_len);
     else if (suffix_type == kMixed)
         surf_ = new SuRF(ints_, kMixed, suffix_len, suffix_len);
+    else if (suffix_type == kInterval)
+        surf_ = new SuRF(ints_, kIncludeDense, kSparseDenseRatio, kInterval, 0, suffix_len);
     else
 	surf_ = new SuRF(ints_);
 }

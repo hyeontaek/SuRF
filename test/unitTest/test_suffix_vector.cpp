@@ -57,6 +57,14 @@ TEST_F (SuffixVectorUnitTest, buildRealTest) {
     suffixes_ = new SuffixVector(kReal, builder_->getSuffixes());
 }
 
+TEST_F (SuffixVectorUnitTest, buildIntervalTest) {
+    bool include_dense = false;
+    uint32_t sparse_dense_ratio = 0;
+    builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kInterval);
+    builder_->build(words);
+    suffixes_ = new SuffixVector(kInterval, builder_->getSuffixes());
+}
+
 //TODO checkEqualityTest
 //TODO compareTest
 

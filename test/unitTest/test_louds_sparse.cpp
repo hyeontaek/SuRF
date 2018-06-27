@@ -21,8 +21,8 @@ static const int kIntTestBound = 1000001;
 static const uint64_t kIntTestSkip = 10;
 static const bool kIncludeDense = false;
 static const uint32_t kSparseDenseRatio = 0;
-static const int kNumSuffixType = 4;
-static const SuffixType kSuffixTypeList[kNumSuffixType] = {kNone, kHash, kReal, kMixed};
+static const int kNumSuffixType = 5;
+static const SuffixType kSuffixTypeList[kNumSuffixType] = {kNone, kHash, kReal, kMixed, kInterval};
 static const int kNumSuffixLen = 6;
 static const level_t kSuffixLenList[kNumSuffixLen] = {1, 3, 7, 8, 13, 26};
 static std::vector<std::string> words;
@@ -74,6 +74,8 @@ void SparseUnitTest::newBuilder(SuffixType suffix_type, level_t suffix_len) {
 	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kReal, 0, suffix_len);
     else if (suffix_type == kMixed)
 	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kMixed, suffix_len, suffix_len);
+    else if (suffix_type == kInterval)
+	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kInterval, 0, suffix_len);
     else
 	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kNone, 0, 0);
 }
