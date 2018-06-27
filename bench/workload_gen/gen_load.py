@@ -25,7 +25,7 @@ def reverseHostName ( email ) :
 
 if (len(sys.argv) < 3) :
     print bcolors.FAIL + 'Usage:'
-    print 'arg 1, key type: randint, timestamp, email' 
+    print 'arg 1, key type: randint, timestamp, email, url' 
     print 'arg 2, distribution: uniform, zipfian, latest' + bcolors.ENDC
     sys.exit()
 
@@ -43,11 +43,15 @@ email_list = 'email_list.txt'
 email_list_size = 27549660
 email_keymap_file = output_dir + 'email_keymap.txt'
 
+url_list = 'uk-2007-05.urls.105896555'
+url_list_size = 105896555
+url_keymap_file = output_dir + 'url_keymap.txt'
+
 timestamp_list = 'poisson_timestamps.csv'
 timestamp_keymap_file = output_dir + 'timestamp_keymap.txt'
 
-if key_type != 'randint' and key_type != 'timestamp' and key_type != 'email' :
-    print bcolors.FAIL + 'Incorrect key_type: please pick from randint and email' + bcolors.ENDC
+if key_type != 'randint' and key_type != 'timestamp' and key_type != 'email' and key_type != 'url':
+    print bcolors.FAIL + 'Incorrect key_type: please pick from randint, timestamp, email, and url' + bcolors.ENDC
     sys.exit()
 
 if distribution != 'uniform' and distribution != 'zipfian' and distribution != 'latest' :
@@ -125,6 +129,30 @@ elif key_type == 'email' :
         f_email_keymap.write (cols[0] + ' ' + email + '\n')
         count += 1
     f_email_keymap.close()
+
+elif key_type == 'url' :
+    url_keymap = {}
+    f_url_keymap = open (url_keymap_file, 'w', )
+
+    f_url = open (url_list, 'r')
+    urls = f_url.readlines()
+
+    f_load = open (out_load_ycsbkey, 'r')
+    f_load_out = open (out_load, 'w')
+
+    sample_size = len(f_load.readlines())
+    gap = url_list_size / sample_size
+
+    f_load.close()
+    f_load = open (out_load_ycsbkey, 'r')
+    count = 0
+    for line in f_load :
+        cols = line.split()
+        url = urls[count * gap].rstrip()
+        f_load_out.write (url + '\n')
+        f_url_keymap.write (cols[0] + ' ' + url + '\n')
+        count += 1
+    f_url_keymap.close()
 
 f_load.close()
 f_load_out.close()

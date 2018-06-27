@@ -25,6 +25,8 @@ static const uint64_t kNumTxns = 10000000;
 static const uint64_t kIntRangeSize = 92233697311;
 static const uint64_t kEmailRangeSize = 128;
 
+// XXX: Assume email and url workloads have the same number of unique keys
+
 //static const uint64_t kRandintRangeSize = 328 * 1024 * 1024 * (uint64_t)1024;
 //static const char* kWordloadDir = "workloads/";
 
@@ -124,7 +126,7 @@ void modifyKeyByte(std::vector<std::string> &keys, int pos) {
 
 std::string getUpperBoundKey(const std::string& key_type, const std::string& key) {
     std::string ret_str = key;
-    if (key_type.compare(std::string("email")) == 0) {
+    if (key_type.compare(std::string("email")) == 0 || key_type.compare(std::string("url")) == 0) {
 	ret_str[ret_str.size() - 1] += (char)kEmailRangeSize;
     } else {
 	uint64_t int_key = stringToUint64(key);

@@ -6,10 +6,10 @@ int main(int argc, char *argv[]) {
 	std::cout << "Usage:\n";
 	std::cout << "1. filter type: SuRF, SuRFHash, SuRFReal, SuRFMixed, SuRFInterval, Bloom\n";
 	std::cout << "2. suffix length: 0 < len <= 64 (for SuRFHash, SuRFReal, and SuRFInterval only)\n";
-	std::cout << "3. workload type: mixed, alterByte (only for email key)\n";
+	std::cout << "3. workload type: mixed, alterByte (only for email or url key)\n";
 	std::cout << "4. percentage of keys inserted: 0 < num <= 100\n";
 	std::cout << "5. byte position (conting from last, only for alterByte): num\n";
-	std::cout << "6. key type: randint, email\n";
+	std::cout << "6. key type: randint, email, url\n";
 	std::cout << "7. query type: point, range, mix\n";
 	std::cout << "8. distribution: uniform, zipfian, latest\n";
 	return -1;
@@ -54,7 +54,8 @@ int main(int argc, char *argv[]) {
 
     if (key_type.compare(std::string("randint")) != 0
 	&& key_type.compare(std::string("timestamp")) != 0
-	&& key_type.compare(std::string("email")) != 0) {
+	&& key_type.compare(std::string("email")) != 0
+	&& key_type.compare(std::string("url")) != 0) {
 	std::cout << bench::kRed << "WRONG key type\n" << bench::kNoColor;
 	return -1;
     }
@@ -77,7 +78,7 @@ int main(int argc, char *argv[]) {
     std::string load_file = "workloads/load_";
     load_file += key_type;
     std::vector<std::string> load_keys;
-    if (key_type.compare(std::string("email")) == 0)
+    if (key_type.compare(std::string("email")) == 0 || key_type.compare(std::string("url")) == 0)
 	bench::loadKeysFromFile(load_file, false, load_keys);
     else
 	bench::loadKeysFromFile(load_file, true, load_keys);
@@ -87,7 +88,7 @@ int main(int argc, char *argv[]) {
     txn_file += "_";
     txn_file += distribution;
     std::vector<std::string> txn_keys;
-    if (key_type.compare(std::string("email")) == 0)
+    if (key_type.compare(std::string("email")) == 0 || key_type.compare(std::string("url")) == 0)
 	bench::loadKeysFromFile(txn_file, false, txn_keys);
     else
 	bench::loadKeysFromFile(txn_file, true, txn_keys);
@@ -122,7 +123,7 @@ int main(int argc, char *argv[]) {
 	    positives += (int)filter->lookup(txn_keys[i]);
     } else if (query_type.compare(std::string("range")) == 0) {
 	for (int i = 0; i < (int)txn_keys.size(); i++)
-	    if (key_type.compare(std::string("email")) == 0) {
+	    if (key_type.compare(std::string("email")) == 0 || key_type.compare(std::string("url")) == 0) {
 		std::string ret_str = txn_keys[i];
 		ret_str[ret_str.size() - 1] += (char)bench::kEmailRangeSize;
 		positives += (int)filter->lookupRange(txn_keys[i], ret_str);
@@ -134,7 +135,7 @@ int main(int argc, char *argv[]) {
 	    if (i % 2 == 0) {
 		positives += (int)filter->lookup(txn_keys[i]);
 	    } else {
-		if (key_type.compare(std::string("email")) == 0) {
+		if (key_type.compare(std::string("email")) == 0 || key_type.compare(std::string("url")) == 0) {
 		    std::string ret_str = txn_keys[i];
 		    ret_str[ret_str.size() - 1] += (char)bench::kEmailRangeSize;
 		    positives += (int)filter->lookupRange(txn_keys[i], ret_str);
