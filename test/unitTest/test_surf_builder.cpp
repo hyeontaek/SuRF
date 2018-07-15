@@ -16,6 +16,7 @@ namespace buildertest {
 static const std::string kFilePath = "../../../test/words.txt";
 static const int kTestSize = 234369;
 static const int kIntTestSize = 1000000;
+static const bool kUseHuffman = false;
 static std::vector<std::string> words;
 static std::vector<std::string> words_dup;
 
@@ -30,7 +31,7 @@ public:
     void truncateSuffixes(const std::vector<std::string> &keys, 
 			  std::vector<std::string> &keys_trunc);
     bool DoesPrefixMatchInTrunc(const std::vector<std::string> &keys_trunc, 
-				     int i, int j, int len);
+				int i, int j, int len);
 
     void fillinInts();
 
@@ -322,7 +323,8 @@ TEST_F (SuRFBuilderUnitTest, buildSparseStringTest) {
     level_t suffix_len_array[5] = {1, 3, 7, 8, 13};
     for (int i = 0; i < 5; i++) {
 	level_t suffix_len = suffix_len_array[i];
-	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kReal, 0, suffix_len);
+	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+				   kReal, 0, suffix_len);
 	builder_->build(words);
 	testSparse(words, words_trunc_);
 	delete builder_;
@@ -335,7 +337,8 @@ TEST_F (SuRFBuilderUnitTest, buildSparseDuplicateTest) {
     level_t suffix_len_array[5] = {1, 3, 7, 8, 13};
     for (int i = 0; i < 5; i++) {
 	level_t suffix_len = suffix_len_array[i];
-	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kReal, 0, suffix_len);
+	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+				   kReal, 0, suffix_len);
 	builder_->build(words_dup);
 	testSparse(words, words_trunc_);
 	delete builder_;
@@ -348,7 +351,8 @@ TEST_F (SuRFBuilderUnitTest, buildSparseIntTest) {
     level_t suffix_len_array[5] = {1, 3, 7, 8, 13};
     for (int i = 0; i < 5; i++) {
 	level_t suffix_len = suffix_len_array[i];
-	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kReal, 0, suffix_len);
+	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+				   kReal, 0, suffix_len);
 	builder_->build(ints_);
 	testSparse(ints_, ints_trunc_);
 	delete builder_;
@@ -361,7 +365,8 @@ TEST_F (SuRFBuilderUnitTest, buildDenseStringTest) {
     level_t suffix_len_array[5] = {1, 3, 7, 8, 13};
     for (int i = 0; i < 5; i++) {
 	level_t suffix_len = suffix_len_array[i];
-	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kReal, 0, suffix_len);
+	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+				   kReal, 0, suffix_len);
 	builder_->build(words);
 	testDense();
 	delete builder_;
@@ -374,7 +379,8 @@ TEST_F (SuRFBuilderUnitTest, buildDenseIntTest) {
     level_t suffix_len_array[5] = {1, 3, 7, 8, 13};
     for (int i = 0; i < 5; i++) {
 	level_t suffix_len = suffix_len_array[i];
-	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kReal, 0, suffix_len);
+	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+				   kReal, 0, suffix_len);
 	builder_->build(ints_);
 	testDense();
 	delete builder_;

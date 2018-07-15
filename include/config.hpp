@@ -26,6 +26,8 @@ static const int kHashShift = 7;
 
 static const int kCouldBePositive = 2018; // used in suffix comparison
 
+static const int kLongestCodeLen = 256;
+
 enum SuffixType {
     kNone = 0,
     kHash = 1,

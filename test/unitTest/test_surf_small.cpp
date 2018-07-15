@@ -14,6 +14,7 @@ namespace surftest {
 
 static const SuffixType kSuffixType = kReal;
 static const level_t kSuffixLen = 8;
+static const bool kUseHuffman = false;
 
 class SuRFSmallTest : public ::testing::Test {
 public:
@@ -36,7 +37,8 @@ TEST_F (SuRFSmallTest, ExampleInPaperTest) {
     keys.push_back(std::string("trip"));
     keys.push_back(std::string("try"));
 
-    SuRF* surf = new SuRF(keys, kIncludeDense, kSparseDenseRatio, kSuffixType, 0, kSuffixLen);
+    SuRF* surf = new SuRF(keys, kIncludeDense, kSparseDenseRatio, kUseHuffman,
+			  kSuffixType, 0, kSuffixLen);
     bool exist = surf->lookupRange(std::string("top"), false, std::string("toyy"), false);
     ASSERT_TRUE(exist);
     exist = surf->lookupRange(std::string("toq"), false, std::string("toyy"), false);

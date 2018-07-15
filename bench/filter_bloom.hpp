@@ -20,6 +20,10 @@ public:
 	delete filter_;
     }
 
+    std::string encode(const std::string& key, uint8_t* code_buf) {
+	return key;
+    }
+
     bool lookup(const std::string& key) {
 	return filter_->KeyMayMatch(key, filter_data_);
     }

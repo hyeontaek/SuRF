@@ -16,6 +16,7 @@ static const bool kIncludeDense = true;
 static const uint32_t kSparseDenseRatio = 0;
 static const SuffixType kSuffixType = kReal;
 static const level_t kSuffixLen = 8;
+static const bool kUseHuffman = false;
 
 class SuRFSmallTest : public ::testing::Test {
 public:
@@ -38,7 +39,8 @@ TEST_F (SuRFSmallTest, ExampleInPaperTest) {
     keys.push_back(std::string("trip"));
     keys.push_back(std::string("try"));
 
-    SuRFBuilder* builder = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kSuffixType, 0, kSuffixLen);
+    SuRFBuilder* builder = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kUseHuffman,
+					   kSuffixType, 0, kSuffixLen);
     builder->build(keys);
     LoudsDense* louds_dense = new LoudsDense(builder);
     LoudsDense::Iter iter(louds_dense);

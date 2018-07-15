@@ -113,18 +113,23 @@ int main(int argc, char *argv[]) {
     std::cout << "Build time = " << (time2 - time1) << std::endl;
 
     // execute transactions =======================================
+    uint8_t* code_buf = new uint8_t[bench::kLongestCodeLen];
     int64_t positives = 0;
     double start_time = bench::getNow();
 
     if (query_type.compare(std::string("point")) == 0) {
-	for (int i = 0; i < (int)txn_keys.size(); i++)
-	    positives += (int)filter->lookup(txn_keys[i]);
+	for (int i = 0; i < (int)txn_keys.size(); i++) {
+	    std::string key = filter->encode(txn_keys[i], code_buf);
+	    positives += (int)filter->lookup(key);
+	}
     } else if (query_type.compare(std::string("range")) == 0) {
 	for (int i = 0; i < (int)txn_keys.size(); i++)
 	    if (key_type.compare(std::string("email")) == 0) {
 		std::string ret_str = txn_keys[i];
 		ret_str[ret_str.size() - 1] += (char)bench::kEmailRangeSize;
-		positives += (int)filter->lookupRange(txn_keys[i], ret_str);
+		std::string left_key = filter->encode(txn_keys[i], code_buf);
+		std::string right_key = filter->encode(ret_str, code_buf);
+		positives += (int)filter->lookupRange(left_key, right_key);
 	    } else {
 		positives += (int)filter->lookupRange(txn_keys[i], bench::uint64ToString(bench::stringToUint64(txn_keys[i]) + bench::kIntRangeSize));
 	    }
@@ -136,7 +141,9 @@ int main(int argc, char *argv[]) {
 		if (key_type.compare(std::string("email")) == 0) {
 		    std::string ret_str = txn_keys[i];
 		    ret_str[ret_str.size() - 1] += (char)bench::kEmailRangeSize;
-		    positives += (int)filter->lookupRange(txn_keys[i], ret_str);
+		    std::string left_key = filter->encode(txn_keys[i], code_buf);
+		    std::string right_key = filter->encode(ret_str, code_buf);
+		    positives += (int)filter->lookupRange(left_key, right_key);
 		} else {
 		    positives += (int)filter->lookupRange(txn_keys[i], bench::uint64ToString(bench::stringToUint64(txn_keys[i]) + bench::kIntRangeSize));
 		}
@@ -198,7 +205,9 @@ int main(int argc, char *argv[]) {
 	fp_rate = false_positives / (true_negatives + false_positives + 0.0);
     std::cout << bench::kGreen << "False Positive Rate = " << bench::kNoColor << fp_rate << "\n";
 
-    std::cout << bench::kGreen << "Memory = " << bench::kNoColor << filter->getMemoryUsage() << "\n\n";
+    std::cout << bench::kGreen << "Memory = " << bench::kNoColor << filter->getMemoryUsage() << "\n";
+    std::cout << bench::kGreen << "Memory per Key = " << bench::kNoColor
+	      << ((filter->getMemoryUsage() + 0.0) / insert_keys.size()) << "\n\n";
 
     return 0;
 }

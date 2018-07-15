@@ -25,6 +25,7 @@ static const int kNumSuffixType = 4;
 static const SuffixType kSuffixTypeList[kNumSuffixType] = {kNone, kHash, kReal, kMixed};
 static const int kNumSuffixLen = 6;
 static const level_t kSuffixLenList[kNumSuffixLen] = {1, 3, 7, 8, 13, 26};
+static const bool kUseHuffman = false;
 static std::vector<std::string> words;
 
 class SparseUnitTest : public ::testing::Test {
@@ -67,15 +68,20 @@ static int getMax(int a, int b) {
 
 void SparseUnitTest::newBuilder(SuffixType suffix_type, level_t suffix_len) {
     if (suffix_type == kNone)
-	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kNone, 0, 0);
+	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kUseHuffman,
+				   kNone, 0, 0);
     else if (suffix_type == kHash)
-	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kHash, suffix_len, 0);
+	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kUseHuffman,
+				   kHash, suffix_len, 0);
     else if (suffix_type == kReal)
-	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kReal, 0, suffix_len);
+	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kUseHuffman,
+				   kReal, 0, suffix_len);
     else if (suffix_type == kMixed)
-	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kMixed, suffix_len, suffix_len);
+	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kUseHuffman,
+				   kMixed, suffix_len, suffix_len);
     else
-	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kNone, 0, 0);
+	builder_ = new SuRFBuilder(kIncludeDense, kSparseDenseRatio, kUseHuffman,
+				   kNone, 0, 0);
 }
 
 void SparseUnitTest::truncateWordSuffixes() {
