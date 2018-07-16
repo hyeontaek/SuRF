@@ -8,6 +8,7 @@
 
 #include "config.hpp"
 #include "hash.hpp"
+#include "ophe.hpp"
 #include "suffix.hpp"
 
 namespace surf {
@@ -15,10 +16,10 @@ namespace surf {
 class SuRFBuilder {
 public: 
     SuRFBuilder() : sparse_start_level_(0), suffix_type_(kNone) {};
-    explicit SuRFBuilder(bool include_dense, uint32_t sparse_dense_ratio,
+    explicit SuRFBuilder(bool include_dense, uint32_t sparse_dense_ratio, bool use_huffman,
 			 SuffixType suffix_type, level_t hash_suffix_len, level_t real_suffix_len)
 	: include_dense_(include_dense), sparse_dense_ratio_(sparse_dense_ratio),
-	  sparse_start_level_(0), suffix_type_(suffix_type),
+	  sparse_start_level_(0), use_huffman_(use_huffman), suffix_type_(suffix_type),
           hash_suffix_len_(hash_suffix_len), real_suffix_len_(real_suffix_len) {};
 
     ~SuRFBuilder() {};
@@ -94,9 +95,25 @@ public:
 	return suffix_intervals_;
     }
 
+    ophe::OPHE* getEncoder() const {
+	return encoder_;
+    }
+
 private:
     static bool isSameKey(const std::string& a, const std::string& b) {
 	return a.compare(b) == 0;
+    }
+
+    static int getCommonPrefixLen(const std::string &a, const std::string &b) {
+	int len = 0;
+	while ((len < (int)a.length()) && (len < (int)b.length()) && (a[len] == b[len]))
+	    len++;
+	return len;
+    }
+
+    static int getMax(int a, int b) {
+	if (a < b) return b;
+	else return a;
     }
 
     // Fill in the LOUDS-Sparse vectors through a single scan
@@ -154,6 +171,8 @@ private:
     bool include_dense_;
     uint32_t sparse_dense_ratio_;
     level_t sparse_start_level_;
+    bool use_huffman_;
+    ophe::OPHE* encoder_;
 
     // LOUDS-Sparse bit/byte vectors
     std::vector<std::vector<label_t> > labels_;
@@ -181,7 +200,19 @@ private:
 
 void SuRFBuilder::build(const std::vector<std::string>& keys) {
     assert(keys.size() > 0);
-    buildSparse(keys);
+    if (use_huffman_) {
+	encoder_ = new ophe::OPHE(keys);
+	std::vector<std::string> enc_keys;
+	uint8_t* code_buf = new uint8_t[kLongestCodeLen];
+	for (position_t i = 0; i < keys.size(); i++) {
+	    enc_keys.push_back(encoder_->encode(keys[i], code_buf));
+	}
+	buildSparse(enc_keys);
+	delete[] code_buf;
+    } else {
+	encoder_ = new ophe::OPHE();
+	buildSparse(keys);
+    }
     if (include_dense_) {
 	determineCutoffLevel();
 	buildDense();

@@ -55,27 +55,33 @@ public:
 public:
     SuRF() {};
 
-    SuRF(const std::vector<std::string>& keys) {
-	create(keys, kIncludeDense, kSparseDenseRatio, kNone, 0, 0);
+    SuRF(const std::vector<std::string>& keys, const bool use_huffman) {
+	create(keys, kIncludeDense, kSparseDenseRatio, use_huffman, kNone, 0, 0);
     }
 
-    SuRF(const std::vector<std::string>& keys, const SuffixType suffix_type,
+    SuRF(const std::vector<std::string>& keys, const bool use_huffman,
+	 const SuffixType suffix_type,
 	 const level_t hash_suffix_len, const level_t real_suffix_len) {
-	create(keys, kIncludeDense, kSparseDenseRatio, suffix_type, hash_suffix_len, real_suffix_len);
+	create(keys, kIncludeDense, kSparseDenseRatio, use_huffman,
+	       suffix_type, hash_suffix_len, real_suffix_len);
     }
     
     SuRF(const std::vector<std::string>& keys,
 	 const bool include_dense, const uint32_t sparse_dense_ratio,
-	 const SuffixType suffix_type, const level_t hash_suffix_len, const level_t real_suffix_len) {
-	create(keys, include_dense, sparse_dense_ratio, suffix_type, hash_suffix_len, real_suffix_len);
+	 const bool use_huffman, const SuffixType suffix_type,
+	 const level_t hash_suffix_len, const level_t real_suffix_len) {
+	create(keys, include_dense, sparse_dense_ratio, use_huffman,
+	       suffix_type, hash_suffix_len, real_suffix_len);
     }
 
     ~SuRF() {}
 
     void create(const std::vector<std::string>& keys,
 		const bool include_dense, const uint32_t sparse_dense_ratio,
-		const SuffixType suffix_type,
+		const bool use_huffman, const SuffixType suffix_type,
                 const level_t hash_suffix_len, const level_t real_suffix_len);
+
+    std::string encode(const std::string& key, uint8_t* code_buf) const;
 
     bool lookupKey(const std::string& key) const;
     // This function searches in a conservative way: if inclusive is true
@@ -96,6 +102,9 @@ public:
 	uint64_t size = serializedSize();
 	char* data = new char[size];
 	char* cur_data = data;
+	memcpy(cur_data, &use_huffman_, sizeof(use_huffman_));
+	cur_data += sizeof(use_huffman_);
+	encoder_->serialize(cur_data);
 	louds_dense_->serialize(cur_data);
 	louds_sparse_->serialize(cur_data);
 	assert(cur_data - data == (int64_t)size);
@@ -104,17 +113,23 @@ public:
 
     static SuRF* deSerialize(char* src) {
 	SuRF* surf = new SuRF();
+	memcpy(&(surf->use_huffman_), src, sizeof(surf->use_huffman_));
+	src += sizeof(surf->use_huffman_);
+	surf->encoder_ = ophe::OPHE::deSerialize(src);
 	surf->louds_dense_ = LoudsDense::deSerialize(src);
 	surf->louds_sparse_ = LoudsSparse::deSerialize(src);
 	return surf;
     }
 
     void destroy() {
+	delete encoder_;
 	louds_dense_->destroy();
 	louds_sparse_->destroy();
     }
 
-private:
+private:    
+    bool use_huffman_;
+    ophe::OPHE* encoder_;
     LoudsDense* louds_dense_;
     LoudsSparse* louds_sparse_;
     SuRFBuilder* builder_;
@@ -123,15 +138,22 @@ private:
 
 void SuRF::create(const std::vector<std::string>& keys, 
 		  const bool include_dense, const uint32_t sparse_dense_ratio,
+		  const bool use_huffman,
 		  const SuffixType suffix_type,
                   const level_t hash_suffix_len, const level_t real_suffix_len) {
-    builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio,
-                              suffix_type, hash_suffix_len, real_suffix_len);
+    use_huffman_ = use_huffman;
+    builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, use_huffman_,
+			       suffix_type, hash_suffix_len, real_suffix_len);
     builder_->build(keys);
+    encoder_ = builder_->getEncoder();
     louds_dense_ = new LoudsDense(builder_);
     louds_sparse_ = new LoudsSparse(builder_);
     iter_ = SuRF::Iter(this);
     delete builder_;
+}
+
+std::string SuRF::encode(const std::string& key, uint8_t* code_buf) const {
+    return (use_huffman_ ? encoder_->encode(key, code_buf) : key);
 }
 
 bool SuRF::lookupKey(const std::string& key) const {
@@ -242,12 +264,17 @@ bool SuRF::lookupRange(const std::string& left_key, const bool left_inclusive,
 }
 
 uint64_t SuRF::serializedSize() const {
-    return (louds_dense_->serializedSize()
+    return (sizeof(use_huffman_)
+	    + encoder_->serializedSize()
+	    + louds_dense_->serializedSize()
 	    + louds_sparse_->serializedSize());
 }
 
 uint64_t SuRF::getMemoryUsage() const {
-    return (sizeof(SuRF) + louds_dense_->getMemoryUsage() + louds_sparse_->getMemoryUsage());
+    return (sizeof(SuRF)
+	    + encoder_->getMemoryUsage()
+	    + louds_dense_->getMemoryUsage()
+	    + louds_sparse_->getMemoryUsage());
 }
 
 level_t SuRF::getHeight() const {

@@ -27,6 +27,7 @@ endif()
 enable_testing()
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/OPHE/include")
 
 add_subdirectory(test)
 add_subdirectory(bench)

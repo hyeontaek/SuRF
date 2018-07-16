@@ -16,6 +16,7 @@ namespace suffixtest {
 
 static const std::string kFilePath = "../../../test/words.txt";
 static const int kTestSize = 234369;
+static const bool kUseHuffman = false;
 static std::vector<std::string> words;
 
 class SuffixUnitTest : public ::testing::Test {
@@ -179,14 +180,17 @@ TEST_F (SuffixUnitTest, checkEqualityTest) {
 	    level_t suffix_len = suffix_len_array[j];
 
             if (i == 0)
-                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, suffix_type, suffix_len, 0);
+                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+					   suffix_type, suffix_len, 0);
             else if (i == 1)
-                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, suffix_type, 0, suffix_len);
+                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+					   suffix_type, 0, suffix_len);
             else if (i == 2)
-                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio,
+                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
                                            suffix_type, suffix_len, suffix_len);
             else
-                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, suffix_type, 0, suffix_len);
+                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+					   suffix_type, 0, suffix_len);
 	    builder_->build(words);
 
 	    level_t height = builder_->getLabels().size();
@@ -226,14 +230,17 @@ TEST_F (SuffixUnitTest, serializeTest) {
 	    SuffixType suffix_type = suffix_type_array[i];
 	    level_t suffix_len = suffix_len_array[j];
             if (i == 0)
-                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, suffix_type, suffix_len, 0);
+                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+					   suffix_type, suffix_len, 0);
             else if (i == 1)
-                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, suffix_type, 0, suffix_len);
+                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+					   suffix_type, 0, suffix_len);
             else if (i == 2)
-                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio,
+                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
                                            suffix_type, suffix_len, suffix_len);
             else
-                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, suffix_type, 0, suffix_len);
+                builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+					   suffix_type, 0, suffix_len);
 	    builder_->build(words);
 
 	    level_t height = builder_->getLabels().size();

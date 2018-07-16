@@ -24,6 +24,8 @@ static const uint64_t kNumEmailRecords = 25000000;
 static const uint64_t kNumTxns = 10000000;
 static const uint64_t kIntRangeSize = 92233697311;
 static const uint64_t kEmailRangeSize = 128;
+static const bool kUseHuffman = true;
+static const int kLongestCodeLen = 256;
 
 // XXX: Assume email and url workloads have the same number of unique keys
 

@@ -22,6 +22,8 @@ static const int kNumSuffixType = 5;
 static const SuffixType kSuffixTypeList[kNumSuffixType] = {kNone, kHash, kReal, kMixed, kInterval};
 static const int kNumSuffixLen = 6;
 static const level_t kSuffixLenList[kNumSuffixLen] = {1, 3, 7, 8, 13, 26};
+static const bool kUseHuffman = false;
+static const int kLongestCodeLen = 256;
 static std::vector<std::string> words;
 
 class SuRFUnitTest : public ::testing::Test {
@@ -78,32 +80,36 @@ static bool isEqual(const std::string& a, const std::string& b, const unsigned b
 
 void SuRFUnitTest::newSuRFWords(SuffixType suffix_type, level_t suffix_len) {
     if (suffix_type == kNone)
-        surf_ = new SuRF(words);
+        surf_ = new SuRF(words, kUseHuffman);
     else if (suffix_type == kHash)
-        surf_ = new SuRF(words, kHash, suffix_len, 0);
+        surf_ = new SuRF(words, kUseHuffman, kHash, suffix_len, 0);
     else if (suffix_type == kReal)
-        surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, kReal, 0, suffix_len);
+        surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, kUseHuffman,
+			 kReal, 0, suffix_len);
     else if (suffix_type == kMixed)
-        surf_ = new SuRF(words, kMixed, suffix_len, suffix_len);
+        surf_ = new SuRF(words, kUseHuffman, kMixed, suffix_len, suffix_len);
     else if (suffix_type == kInterval)
-        surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, kInterval, 0, suffix_len);
+        surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, kUseHuffman,
+		         kInterval, 0, suffix_len);
     else
-	surf_ = new SuRF(words);
+	surf_ = new SuRF(words, kUseHuffman);
 }
 
 void SuRFUnitTest::newSuRFInts(SuffixType suffix_type, level_t suffix_len) {
     if (suffix_type == kNone)
-        surf_ = new SuRF(ints_);
+        surf_ = new SuRF(ints_, kUseHuffman);
     else if (suffix_type == kHash)
-        surf_ = new SuRF(ints_, kHash, suffix_len, 0);
+        surf_ = new SuRF(ints_, kUseHuffman, kHash, suffix_len, 0);
     else if (suffix_type == kReal)
-        surf_ = new SuRF(ints_, kIncludeDense, kSparseDenseRatio, kReal, 0, suffix_len);
+        surf_ = new SuRF(ints_, kIncludeDense, kSparseDenseRatio, kUseHuffman,
+			 kReal, 0, suffix_len);
     else if (suffix_type == kMixed)
-        surf_ = new SuRF(ints_, kMixed, suffix_len, suffix_len);
+        surf_ = new SuRF(ints_, kUseHuffman, kMixed, suffix_len, suffix_len);
     else if (suffix_type == kInterval)
-        surf_ = new SuRF(ints_, kIncludeDense, kSparseDenseRatio, kInterval, 0, suffix_len);
+        surf_ = new SuRF(ints_, kIncludeDense, kSparseDenseRatio, kUseHuffman,
+		         kInterval, 0, suffix_len);
     else
-	surf_ = new SuRF(ints_);
+	surf_ = new SuRF(ints_, kUseHuffman);
 }
 
 void SuRFUnitTest::truncateWordSuffixes() {
@@ -169,11 +175,48 @@ TEST_F (SuRFUnitTest, lookupWordTest) {
     for (int t = 0; t < kNumSuffixType; t++) {
 	for (int k = 0; k < kNumSuffixLen; k++) {
 	    newSuRFWords(kSuffixTypeList[t], kSuffixLenList[k]);
-	    testLookupWord(kSuffixTypeList[t]);
+	    for (unsigned i = 0; i < words.size(); i++) {
+		bool key_exist = surf_->lookupKey(words[i]);
+		ASSERT_TRUE(key_exist);
+	    }
 	    surf_->destroy();
 	    delete surf_;
 	}
     }
+}
+
+TEST_F (SuRFUnitTest, encodeWordTest) {
+    surf_ = new SuRF(words, false);
+    uint64_t mem_use_ori = surf_->getMemoryUsage();
+    uint64_t height_ori = surf_->getHeight();
+    surf_->destroy();
+    delete surf_;
+
+    surf_ = new SuRF(words, true);
+    uint64_t mem_use_enc = surf_->getMemoryUsage();
+    uint64_t height_enc = surf_->getHeight();
+    surf_->destroy();
+    delete surf_;
+
+    std::cout << "Original Mem Use = " << mem_use_ori << std::endl;
+    std::cout << "Encoded  Mem Use = " << mem_use_enc << std::endl;
+    std::cout << "Mem Compression Rate = " << ((mem_use_enc + 0.0) / mem_use_ori) << std::endl;
+
+    std::cout << "Original Height = " << height_ori << std::endl;
+    std::cout << "Encoded  Height = " << height_enc << std::endl;
+    std::cout << "Height Compression Rate = " << ((height_enc + 0.0) / height_ori) << std::endl;
+}
+
+TEST_F (SuRFUnitTest, lookupEncodedWordTest) {
+    surf_ = new SuRF(words, kIncludeDense, kSparseDenseRatio, true, kReal, 0, 8);
+    uint8_t* code_buf = new uint8_t[kLongestCodeLen];
+    for (unsigned i = 0; i < words.size(); i++) {
+	std::string key = surf_->encode(words[i], code_buf);
+	bool key_exist = surf_->lookupKey(key);
+	ASSERT_TRUE(key_exist);
+    }
+    surf_->destroy();
+    delete surf_;
 }
 
 TEST_F (SuRFUnitTest, serializeTest) {

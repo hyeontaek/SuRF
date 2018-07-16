@@ -16,6 +16,7 @@ namespace bitvectortest {
 
 static const std::string kFilePath = "../../../test/words.txt";
 static const int kTestSize = 234369;
+static const bool kUseHuffman = false;
 static std::vector<std::string> words;
 
 class BitvectorUnitTest : public ::testing::Test {
@@ -24,7 +25,8 @@ public:
 	bool include_dense = true;
 	uint32_t sparse_dense_ratio = 0;
 	level_t suffix_len = 8;
-	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kReal, 0, suffix_len);
+	builder_ = new SuRFBuilder(include_dense, sparse_dense_ratio, kUseHuffman,
+				   kReal, 0, suffix_len);
 	num_items_ = 0;
     }
     virtual void TearDown () {

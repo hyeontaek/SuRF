@@ -16,12 +16,17 @@ public:
                const uint32_t hash_suffix_len, const uint32_t real_suffix_len) {
 	// uses default sparse-dense size ratio
 	filter_ = new surf::SuRF(keys, surf::kIncludeDense, surf::kSparseDenseRatio,
-				 suffix_type, hash_suffix_len, real_suffix_len);
+				 kUseHuffman, suffix_type,
+				 hash_suffix_len, real_suffix_len);
     }
 
     ~FilterSuRF() {
 	filter_->destroy();
 	delete filter_;
+    }
+
+    std::string encode(const std::string& key, uint8_t* code_buf) {
+	return filter_->encode(key, code_buf);
     }
 
     bool lookup(const std::string& key) {
